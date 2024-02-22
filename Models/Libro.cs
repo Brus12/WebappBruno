@@ -7,7 +7,6 @@ namespace WebappBruno.Models
     public class Libro
     {
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-
         public int Id { get; set; }
         public string Titulo { get; set; }
         [DataType(DataType.Date)]

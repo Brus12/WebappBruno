@@ -8,7 +8,6 @@ namespace WebappBruno.Models
     public class Autor
     {
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-
         public int Id { get; set; }
         public string Nombre { get; set; }
         public string Nacionalidad { get; set; }
