@@ -59,6 +59,7 @@ namespace WebappBruno.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Id,Titulo,AnioPublicacion,Foto")] Libro libro)
         {
+
             Console.WriteLine(libro);
             if (ModelState.IsValid)
             {

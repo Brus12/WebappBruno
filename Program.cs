@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using WebappBruno.Context;
+using WebappBruno.Helpers;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -9,6 +10,8 @@ builder.Services.AddDbContext<brunoContext>((options) =>
 {
     options.UseSqlServer(builder.Configuration.GetConnectionString("brunoconexion"));
 });
+
+builder.Services.Configure<AzureStorageConfig>(builder.Configuration.GetSection("AzureStorage"));
 
 var app = builder.Build();
 
