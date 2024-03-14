@@ -8,23 +8,28 @@ using Microsoft.DotNet.Scaffolding.Shared.Messaging;
 using Microsoft.EntityFrameworkCore;
 using WebappBruno.Context;
 using WebappBruno.Models;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Options;
+using WebappBruno.Helpers;
 
 namespace WebappBruno.Controllers
 {
     public class LibroesController : Controller
     {
         private readonly brunoContext _context;
-
-        public LibroesController(brunoContext context)
+        private readonly AzureStorageConfig _config;
+        
+        public LibroesController(brunoContext context, IOptions<AzureStorageConfig> config)
         {
             _context = context;
+            _config = config.Value;
         }
 
         // GET: Libroes
         public async Task<IActionResult> Index()
         {
               return _context.libros != null ? 
-                          View(await _context.libros.ToListAsync()) :
+                          View(await _context.libros.Include(e=> e.Autor).ToListAsync()) :
                           Problem("Entity set 'brunoContext.libros'  is null.");
         }
 
@@ -37,6 +42,7 @@ namespace WebappBruno.Controllers
             }
 
             var libro = await _context.libros
+                .Include(e => e.Autor)
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (libro == null)
             {
@@ -47,8 +53,10 @@ namespace WebappBruno.Controllers
         }
 
         // GET: Libroes/Create
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
+            var autores = await _context.autores.ToListAsync();
+            ViewBag.Autor = new SelectList(autores, "Id", "Nombre");
             return View();
         }
 
@@ -57,16 +65,29 @@ namespace WebappBruno.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Titulo,AnioPublicacion,Foto")] Libro libro)
+        public async Task<IActionResult> Create([Bind("Id,Titulo,AnioPublicacion,Foto,Autor")] Libro libro, IFormFile foto)
         {
-
-            Console.WriteLine(libro);
-            if (ModelState.IsValid)
+            if ("Titulo,AnioPublicacion".Split(',').All (campo => ModelState.ContainsKey(campo)))
             {
-                _context.Add(libro);
+                if (foto == null)
+                {
+                    libro.Foto = StorageHelper.URL_Imagen_default;
+                }
+                else
+                {
+                    string extension = foto.FileName.Split(",")[0];
+                    string Titulo = $"{Guid.NewGuid()}.{extension}";
+                    libro.Foto = await StorageHelper.SubirArchivo(foto.OpenReadStream(), Titulo, _config);
+                }
+                _context.Set<Libro>().Add(libro);
+                _context.Entry(libro.Autor).State = EntityState.Unchanged;
                 await _context.SaveChangesAsync();
+                                           
                 return RedirectToAction(nameof(Index));
+               
             }
+                        
+            
             return View(libro);
         }
 
@@ -130,6 +151,7 @@ namespace WebappBruno.Controllers
             }
 
             var libro = await _context.libros
+                .Include(e=> e.Autor)
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (libro == null)
             {

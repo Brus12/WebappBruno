@@ -7,10 +7,10 @@
 <h1>Create</h1>
 
 <h4>Libro</h4>
-<hr />
+<hr/>
 <div class="row">
     <div class="col-md-4">
-        <form asp-action="Create">
+        <form asp-action="Create" enctype="multipart/form-data">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <div class="form-group">
                 <label asp-for="Titulo" class="control-label"></label>
@@ -19,13 +19,32 @@
             </div>
             <div class="form-group">
                 <label asp-for="AnioPublicacion" class="control-label"></label>
-                <input asp-for="AnioPublicacion" class="form-control" />
+                <input asp-for="AnioPublicacion" class="form-control" type="date"/>
                 <span asp-validation-for="AnioPublicacion" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <label asp-for="Foto" class="control-label"></label>
-                <input asp-for="Foto" class="form-control" />
+                <input asp-for="Foto" class="form-control" id="archivo" type="file" />
+                
                 <span asp-validation-for="Foto" class="text-danger"></span>
+            </div>
+            <div class= "form-group form-crear-libro-foto">
+                <img id="foto-perfil" class="perfil-foto" src="https://brunocuenta.blob.core.windows.net/contenedorbruno/persona1.jpg"/>
+            </div>
+           @* <div class="form-group form-crear-libro-autor">
+                <input name="foto" class="form-control" itemid="archivo" type="file"/>
+            </div>*@
+            <div class="form-group form-crear-libro-autor">
+                <label class="control-label"></label>
+                @if ((ViewBag.Autor as SelectList).Count() > 0)
+                {
+                    @Html.DropDownList("Autor.Id", ViewBag.Autor as SelectList)
+                }
+                @if ((ViewBag.Autor as SelectList).Count() == 0)
+                {
+                    <select required disabled></select>
+                }
+                <span asp-validation-for="Autor.Id" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <input type="submit" value="Create" class="btn btn-primary" />
@@ -41,3 +60,19 @@
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
 }
+<script>
+    window.addEventListener('load', () =>{
+        console.log('loaded');
+        let foto_libro = document.getElementById('foto-perfil');
+        let reader = new FileReader();
+        let input = document.getElementById('archivo');
+        input.addEventListener('input',(e)=>{
+            console.log('input changed');
+            reader.readAsDataURL(input.files[0]);
+        });
+        reader.onload =(e) => {
+            console.log('img reloaded');
+            foto_libro.setAttribute('src', e.target.result);
+        };
+    });
+</script>
