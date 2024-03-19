@@ -20,14 +20,22 @@
             </div>
             <div class="form-group">
                 <label asp-for="AnioPublicacion" class="control-label"></label>
-                <input asp-for="AnioPublicacion" class="form-control" />
+                <input asp-for="AnioPublicacion" class="form-control" type="date"/>
                 <span asp-validation-for="AnioPublicacion" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="Foto" class="control-label"></label>
+                @*<label asp-for="Foto" class="control-label"></label>
                 <input asp-for="Foto" class="form-control" />
+                <span asp-validation-for="Foto" class="text-danger"></span>*@
+                <label asp-for="Foto" class="control-label"></label>
+                <input asp-for="Foto" class="form-control" id="archivo" type="file" />                
                 <span asp-validation-for="Foto" class="text-danger"></span>
             </div>
+
+            <div class= "form-group form-crear-libro-foto">
+                <img id="foto-perfil" class="perfil-foto" src="@Model.Foto"/>
+            </div>
+
             <div class="form-group">
                 <input type="submit" value="Save" class="btn btn-primary" />
             </div>
@@ -42,3 +50,19 @@
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
 }
+<script>
+    window.addEventListener('load', () =>{
+        console.log('loaded');
+        let foto_libro = document.getElementById('foto-perfil');
+        let reader = new FileReader();
+        let input = document.getElementById('archivo');
+        input.addEventListener('input',(e)=>{
+            console.log('input changed');
+            reader.readAsDataURL(input.files[0]);
+        });
+        reader.onload =(e) => {
+            console.log('img reloaded');
+            foto_libro.setAttribute('src', e.target.result);
+        };
+    });
+</script>

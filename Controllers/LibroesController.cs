@@ -104,6 +104,8 @@ namespace WebappBruno.Controllers
             {
                 return NotFound();
             }
+            var autores = await _context.autores.ToListAsync();
+            ViewBag.Autor = new SelectList(autores, "Id", "Nombre");
             return View(libro);
         }
 
@@ -112,17 +114,29 @@ namespace WebappBruno.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Titulo,AnioPublicacion,Foto")] Libro libro)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Titulo,AnioPublicacion,Foto,Autor")] Libro libro)
         {
             if (id != libro.Id)
             {
                 return NotFound();
             }
 
+            // Busca el libro original en la base de datos
+            var libroOriginal = await _context.libros.AsNoTracking().FirstOrDefaultAsync(l => l.Id == id);
+
+            if (libroOriginal == null)
+            {
+                return NotFound();
+            }
+
+            // Copia el autor del libro original al libro editado
+            libro.Autor = libroOriginal.Autor;
+
+
             if (ModelState.IsValid)
             {
                 try
-                {
+                {                    
                     _context.Update(libro);
                     await _context.SaveChangesAsync();
                 }
@@ -138,6 +152,14 @@ namespace WebappBruno.Controllers
                     }
                 }
                 return RedirectToAction(nameof(Index));
+            }
+            if (!ModelState.IsValid)
+            {
+                var errors = ModelState.Values.SelectMany(v => v.Errors);
+                foreach (var error in errors)
+                {
+                    Console.WriteLine(error.ErrorMessage);
+                }
             }
             return View(libro);
         }
