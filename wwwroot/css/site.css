@@ -42,3 +42,15 @@ body {
     margin-bottom: 10px;
 }
 
+.centro a {
+    color: black;
+    border: 1px solid #000;
+    border-radius: 5px;
+    padding: 5px 10px;
+    display: inline-block;
+    text-decoration: none;
+}
+
+.form-group {
+    margin: 20px; /* Ajusta este valor según tus necesidades */
+}

@@ -10,7 +10,7 @@
 <hr />
 <div class="row">
     <div class="col-md-4">
-        <form asp-action="Edit">
+        <form asp-action="Edit"  enctype="multipart/form-data">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <input type="hidden" asp-for="Id" />
             <div class="form-group">
@@ -24,17 +24,31 @@
                 <span asp-validation-for="AnioPublicacion" class="text-danger"></span>
             </div>
             <div class="form-group">
-                @*<label asp-for="Foto" class="control-label"></label>
-                <input asp-for="Foto" class="form-control" />
-                <span asp-validation-for="Foto" class="text-danger"></span>*@
                 <label asp-for="Foto" class="control-label"></label>
-                <input asp-for="Foto" class="form-control" id="archivo" type="file" />                
+                <input asp-for="Foto" class="form-control" id="archivo" type="file" />   
+                <input asp-for="Foto" type="hidden"/>
+                
+            </div>
+
+            <div class= "form-group form-crear-libro-foto"> 
+                <img id="foto-perfil" class="perfil-foto" src="@Model.Foto" style="max-width: 183px; max-height: 275px;"/>
                 <span asp-validation-for="Foto" class="text-danger"></span>
             </div>
 
-            <div class= "form-group form-crear-libro-foto">
-                <img id="foto-perfil" class="perfil-foto" src="@Model.Foto"/>
+             <div class="form-group form-crear-libro-autor">
+                <label class="control-label"></label>
+                @if ((ViewBag.Autor as SelectList).Count() > 0)
+                {
+                    @Html.DropDownList("Autor.Id", ViewBag.Autor as SelectList)
+                }
+                @if ((ViewBag.Autor as SelectList).Count() == 0)
+                {
+                        <select required disabled></select>
+                }
+                <span asp-validation-for="Autor.Id" class="text-danger"></span>
             </div>
+
+
 
             <div class="form-group">
                 <input type="submit" value="Save" class="btn btn-primary" />

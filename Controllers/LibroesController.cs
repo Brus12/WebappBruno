@@ -67,7 +67,7 @@ namespace WebappBruno.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Id,Titulo,AnioPublicacion,Foto,Autor")] Libro libro, IFormFile foto)
         {
-            if ("Titulo,AnioPublicacion".Split(',').All (campo => ModelState.ContainsKey(campo)))
+            if ("Titulo,AnioPublicacion,Autor.Id".Split(',').All (campo => ModelState.ContainsKey(campo)))
             {
                 if (foto == null)
                 {
@@ -103,6 +103,7 @@ namespace WebappBruno.Controllers
             if (libro == null)
             {
                 return NotFound();
+
             }
             var autores = await _context.autores.ToListAsync();
             ViewBag.Autor = new SelectList(autores, "Id", "Nombre");
@@ -114,29 +115,31 @@ namespace WebappBruno.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Titulo,AnioPublicacion,Foto,Autor")] Libro libro)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Titulo,AnioPublicacion,Foto,Autor")] Libro libro , IFormFile foto)
         {
+            //Cargar el objeto
+            var libroCargado = await _context.autores.FindAsync(libro.Autor.Id);
+            libro.Autor = libroCargado;
             if (id != libro.Id)
             {
                 return NotFound();
             }
 
-            // Busca el libro original en la base de datos
-            var libroOriginal = await _context.libros.AsNoTracking().FirstOrDefaultAsync(l => l.Id == id);
-
-            if (libroOriginal == null)
-            {
-                return NotFound();
-            }
-
-            // Copia el autor del libro original al libro editado
-            libro.Autor = libroOriginal.Autor;
-
-
-            if (ModelState.IsValid)
+            if ("Titulo,AnioPublicacion,Autor.Id".Split(',').All(campo => ModelState.ContainsKey(campo)))
             {
                 try
-                {                    
+                {
+                    if (foto == null)
+                    {
+                        libro.Foto = await _context.libros.Where(x => x.Id == libro.Id).Select(x => x.Foto).SingleOrDefaultAsync();
+                    }
+                    else
+                    {
+                        string extension = foto.FileName.Split(",")[0];
+                        string Titulo = $"{Guid.NewGuid()}.{extension}";
+                        libro.Foto = await StorageHelper.SubirArchivo(foto.OpenReadStream(), Titulo, _config);
+                    }
+
                     _context.Update(libro);
                     await _context.SaveChangesAsync();
                 }
@@ -153,14 +156,14 @@ namespace WebappBruno.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            if (!ModelState.IsValid)
-            {
-                var errors = ModelState.Values.SelectMany(v => v.Errors);
-                foreach (var error in errors)
-                {
-                    Console.WriteLine(error.ErrorMessage);
-                }
-            }
+            //if (!ModelState.IsValid)
+            //{
+            //    var errors = ModelState.Values.SelectMany(v => v.Errors);
+            //    foreach (var error in errors)
+            //    {
+            //        Console.WriteLine(error.ErrorMessage);
+            //    }
+            //}
             return View(libro);
         }
 
